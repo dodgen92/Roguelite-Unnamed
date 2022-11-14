@@ -19,27 +19,35 @@ public class WorldScrolling : MonoBehaviour
     [SerializeField] int terrainTileVerticalCount;
 
 
-    //Always keep field of vision
+    //Always keep field of vision lower than terraintile count
     [SerializeField] int fieldOfVisionHeight = 3;
     [SerializeField] int fieldOfVisionWidth = 3;
     private void Awake()
     {
         terrainTiles = new GameObject[terrainTileHorizontalCount, terrainTileVerticalCount];
     }
-    
+
+    private void Start()
+    {
+        UpdateTilesOnScreen();
+    }
     //determines current position of the player
-    
+
     private void Update()
     {
         playerTilePosition.x = (int) (playerTransform.position.x / tileSize);
-        playerTilePosition.y = (int)(playerTransform.position.y / tileSize);
-    
+        playerTilePosition.y = (int) (playerTransform.position.y / tileSize);
+
+        //offset player position
+        playerTilePosition.x -= playerTransform.position.x < 0 ? 1 : 0;
+        playerTilePosition.y -= playerTransform.position.y < 0 ? 1 : 0;
+
         if (currentTilePosition != playerTilePosition)
         {
             currentTilePosition = playerTilePosition;
 
             onTileGridPlayerPosition.x = CalculatePositionOnAxis(onTileGridPlayerPosition.x, true);
-            onTileGridPlayerPosition.x = CalculatePositionOnAxis(onTileGridPlayerPosition.y, false);
+            onTileGridPlayerPosition.y = CalculatePositionOnAxis(onTileGridPlayerPosition.y, false);
             UpdateTilesOnScreen();
         }
     }
@@ -47,18 +55,20 @@ public class WorldScrolling : MonoBehaviour
 
     private void UpdateTilesOnScreen()
     {
-        for (int pov_x = -(fieldOfVisionWidth/2), pov_x < fieldOfVisionWidth; pov_x++)
-            (
-                for (int pov_y = 0, pov_y < fieldOfVisionHeight; pov_y++)
-        {
-            int tileToUpdate_x = CalculatePositionOnAxis(playerTilePosition.x + pov_x, true);
-            int tileToUpdate_y = CalculatePositionOnAxis(playerTilePosition.x + pov_y, true);
+        for (int pov_x = -(fieldOfVisionWidth/2); pov_x <= fieldOfVisionWidth/2; pov_x++)
+        { 
+                for (int pov_y = -(fieldOfVisionHeight/2); pov_y <= fieldOfVisionHeight/2; pov_y++)
+                {
+                    int tileToUpdate_x = CalculatePositionOnAxis(playerTilePosition.x + pov_x, true);
+                    int tileToUpdate_y = CalculatePositionOnAxis(playerTilePosition.y + pov_y, false);
 
-            GameObject tile = terrainTiles[tileToUpdate_x, tileToUpdate_y];
-            tile.transform.position = CalculateTilePosition(
-                playerTilePosition(playerTilePosition.x + pov_x,
-                playerTilePosition.y + pov_y
-                );
+                     Debug.Log("tileToUpdate+x" + tileToUpdate_x + "tileToUpdate+y" + tileToUpdate_y);
+
+                     GameObject tile = terrainTiles[tileToUpdate_x, tileToUpdate_y];
+                     tile.transform.position = CalculateTilePosition(
+                        playerTilePosition.x + pov_x,
+                        playerTilePosition.y + pov_y
+                        );
 
         }
 
@@ -67,7 +77,7 @@ public class WorldScrolling : MonoBehaviour
 
     private Vector3 CalculateTilePosition(int x, int y)
 {
-    return new Vector3(x * tileSize, y * tileSize, 0f);
+        return new Vector3(x * tileSize, y * tileSize, 0f);
 }
 
 
@@ -82,6 +92,7 @@ public class WorldScrolling : MonoBehaviour
             }
             else
             {
+                currentValue += 1;
                 currentValue = terrainTileHorizontalCount - 1 + currentValue % terrainTileHorizontalCount;
             }
         }
@@ -92,6 +103,7 @@ public class WorldScrolling : MonoBehaviour
             }
             else
             {
+                currentValue += 1;
                 currentValue = terrainTileVerticalCount - 1 + currentValue % terrainTileVerticalCount;
             }
 
@@ -106,3 +118,4 @@ public class WorldScrolling : MonoBehaviour
         terrainTiles[tilePosition.x, tilePosition.y] = tileGameObject;
     }
 }
+
