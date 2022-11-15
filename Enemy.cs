@@ -5,6 +5,7 @@ using UnityEngine;
 public class Enemy : MonoBehaviour
 {
     [SerializeField] Transform targetDestination;
+    GameObject targetGameObject;
     [SerializeField] float speed;
 
     
@@ -14,6 +15,7 @@ public class Enemy : MonoBehaviour
     private void Awake()
     {
         rgbd2d = GetComponent<Rigidbody2D>();
+        targetGameObject = targetDestination.gameObject;
     }
 
     private void FixedUpdate()
@@ -22,4 +24,20 @@ public class Enemy : MonoBehaviour
         Vector3 direction = (targetDestination.position - transform.position).normalized;
         rgbd2d.velocity = direction * speed;
     }
+    private void OnCollisionStay2D(Collision2D collision)
+    {     ///checking if collision is with player
+        if (collision.gameObject == targetGameObject)
+        {
+            Attack();
+        }
+    }
+
+    private void Attack()
+    {
+        Debug.Log("Attacking the player!");
+    }
+
 }
+
+
+
